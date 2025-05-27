@@ -33,8 +33,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final clipboardData = await Clipboard.getData('text/plain');
       if (clipboardData != null && clipboardData.text != null) {
         setState(() => _controller.text = clipboardData.text!);
+        convert();
       }
     }
+  }
+
+  void convert() {
+    setState(() => _output = Utils.keyboardFromUsToCz(_controller.text));
+    Clipboard.setData(ClipboardData(text: _output));
   }
 
   @override
@@ -50,11 +56,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               MacosTextField(controller: _controller),
               PushButton(
                 controlSize: ControlSize.regular,
+                onPressed: convert,
                 child: const Text('US to CZ'),
-                onPressed: () {
-                  setState(() => _output = Utils.keyboardFromUsToCz(_controller.text));
-                  Clipboard.setData(ClipboardData(text: _output));
-                },
               ),
               SelectableText(_output, style: const TextStyle(fontSize: 16)),
             ],
