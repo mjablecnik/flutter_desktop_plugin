@@ -41,7 +41,7 @@ class _MyAppState extends State<MyApp> with TrayListener {
   }
 
   Future<void> _initTray() async {
-    await trayManager.setIcon('assets/favicon.ico');
+    await trayManager.setIcon('assets/keyboard.png', iconSize: 22);
     await trayManager.setContextMenu(
       Menu(items: [MenuItem(key: 'show', label: 'Show'), MenuItem.separator(), MenuItem(key: 'exit', label: 'Exit')]),
     );
