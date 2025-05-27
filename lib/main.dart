@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:macos_ui/macos_ui.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
+import 'home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
-  //await windowManager.waitUntilReadyToShow();
-  //await windowManager.setPreventClose(true);
+  await windowManager.setPreventClose(false);
   WindowOptions windowOptions = WindowOptions(
     size: Size(350, 250),
     center: true,
     skipTaskbar: true,
     titleBarStyle: TitleBarStyle.hidden,
     windowButtonVisibility: true,
-    backgroundColor: Colors.transparent,
+    //backgroundColor: MacosColors.transparent,
     alwaysOnTop: true,
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -21,33 +22,17 @@ void main() async {
     await windowManager.focus();
   });
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Menu Bar App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: HomePage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class HomePage extends StatefulWidget {
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> with TrayListener {
-  TextEditingController _controller = TextEditingController();
-  String _output = "";
-
+class _MyAppState extends State<MyApp> with TrayListener {
   @override
   void initState() {
     super.initState();
@@ -57,33 +42,26 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
   Future<void> _initTray() async {
     await trayManager.setIcon('assets/favicon.ico');
-		await trayManager.setContextMenu(Menu(items: [
-			MenuItem(key: 'show', label: 'Show'),
-			MenuItem.separator(),
-			MenuItem(key: 'exit', label: 'Exit'),
-		]));
+    await trayManager.setContextMenu(
+      Menu(items: [MenuItem(key: 'show', label: 'Show'), MenuItem.separator(), MenuItem(key: 'exit', label: 'Exit')]),
+    );
   }
 
   @override
   void onTrayIconRightMouseDown() {
-		trayManager.popUpContextMenu();
+    trayManager.popUpContextMenu();
   }
 
   @override
   void onTrayIconMouseDown() async {
     bool isVisible = await windowManager.isVisible();
-  
+
     if (isVisible) {
       await windowManager.hide();
     } else {
       await windowManager.show();
       await windowManager.focus();
     }
-  }
-
-  @override
-  void onWindowClose() async {
-    await windowManager.hide(); 
   }
 
   @override
@@ -99,84 +77,20 @@ class _HomePageState extends State<HomePage> with TrayListener {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Mini App"),
-        elevation: 0.5,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: Card(
-            elevation: 4,
-            margin: const EdgeInsets.all(24),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        labelText: "Vstup",
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) {
-                        setState(() {
-                          _output = "Výstup: ${_controller.text}";
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text("Zpracuj"),
-                        onPressed: () {
-                          setState(() {
-                            _output = "Výstup: ${_controller.text}";
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_output.isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _output,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
   void dispose() {
     trayManager.removeListener(this);
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MacosApp(
+      title: 'Desktop plugin',
+      theme: MacosThemeData.light(),
+      darkTheme: MacosThemeData.dark(),
+      themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false,
+      home: const HomePage(),
+    );
   }
 }
