@@ -1,0 +1,25 @@
+version: '3'
+# Manual is here: https://taskfile.dev/usage/
+
+tasks:
+  help:
+    aliases: [default]
+    cmd: "task --list"
+
+  update-dependencies:
+    desc: "Updates Dart dependencies"
+    cmd: "fvm dart pub get"
+
+  build-macos:
+    cmd: "flutter build macos"
+    desc: "Build for macos"
+
+  run-dev:
+    cmd: "flutter run"
+    desc: "Run application"
+
+  run-macos:
+    cmd: "open build/macos/Build/Products/Release/flutter_desktop_plugin.app"
+    desc: "Run application"
+    deps:
+      - build-macos
